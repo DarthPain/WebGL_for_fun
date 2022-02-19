@@ -1,7 +1,8 @@
 main();
 
-// WebGL init
+var squareRotation = 0.0;
 
+// WebGL init
 function initShadersProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -20,7 +21,6 @@ function initShadersProgram(gl, vsSource, fsSource) {
 }
 
 // create, upload and compile a shader
-
 function loadShader(gl, type, source) {
   const shader = gl.createShader(type);
 
@@ -73,7 +73,7 @@ function initBuffers(gl) {
   };
 }
 
-function drawScene(gl, programInfo, buffers) {
+function drawScene(gl, programInfo, buffers, deltaTime) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
@@ -98,6 +98,7 @@ function drawScene(gl, programInfo, buffers) {
 
   const modelViewMatrix = mat4.create();
   mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+  mat4.rotate(modelViewMatrix, modelViewMatrix, squareRotation, [0, 0, 1]);
 
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.
@@ -158,6 +159,8 @@ function drawScene(gl, programInfo, buffers) {
     const vertexCount = 4;
     gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
   }
+
+  squareRotation += deltaTime;
 }
 
 function main() {
@@ -212,9 +215,16 @@ function main() {
   };
   const buffers = initBuffers(gl);
 
-  drawScene(gl, programInfo, buffers);
+  var then = 0;
 
-  // gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  function render(now) {
+    now *= 0.001;
+    const deltaTime = now - then;
+    then = now;
 
-  // gl.clear(gl.COLOR_BUFFER_BIT);
+    drawScene(gl, programInfo, buffers, deltaTime);
+
+    requestAnimationFrame(render);
+  }
+  requestAnimationFrame(render);
 }
